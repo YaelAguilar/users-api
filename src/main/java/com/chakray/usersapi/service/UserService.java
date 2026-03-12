@@ -82,7 +82,7 @@ public class UserService {
     }
 
     public List<User> filterUsers(String filter) {
-        String[] parts = filter.split("\\+");
+        String[] parts = filter.split("[+\\s]");
         if (parts.length != 3) return Collections.emptyList();
 
         String field = parts[0];
