@@ -93,6 +93,47 @@ class UsersApiApplicationTests {
 	}
 
 	@Test
+	void shouldUpdatePhoneWhenValid() {
+		UUID id = userService.getUsers(null).getFirst().getId();
+		Optional<User> updated = userService.updateUser(id, Map.of("phone", "+1 5555555512"));
+		assertTrue(updated.isPresent());
+		assertEquals("+1 5555555512", updated.get().getPhone());
+	}
+
+	@Test
+	void shouldThrowExceptionWhenPhoneIsInvalidOnUpdate() {
+		UUID id = userService.getUsers(null).getFirst().getId();
+		assertThrows(IllegalArgumentException.class,
+				() -> userService.updateUser(id, Map.of("phone", "12345")));
+	}
+
+	@Test
+	void shouldUpdateTaxIdWhenValidAndUnique() {
+		UUID id = userService.getUsers(null).getFirst().getId();
+		String newTaxId = "DDRR990101WWW";
+		Optional<User> updated = userService.updateUser(id, Map.of("tax_id", newTaxId));
+		assertTrue(updated.isPresent());
+		assertEquals(newTaxId, updated.get().getTax_id());
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTaxIdIsInvalidOnUpdate() {
+		UUID id = userService.getUsers(null).getFirst().getId();
+		assertThrows(IllegalArgumentException.class,
+				() -> userService.updateUser(id, Map.of("tax_id", "INVALID")));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTaxIdIsDuplicatedOnUpdate() {
+		List<User> users = userService.getUsers(null);
+		UUID firstUserId = users.getFirst().getId();
+		String existingTaxId = users.get(1).getTax_id();
+
+		assertThrows(IllegalArgumentException.class,
+				() -> userService.updateUser(firstUserId, Map.of("tax_id", existingTaxId)));
+	}
+
+	@Test
 	void shouldDeleteUserById() {
 		UUID id = userService.getUsers(null).getFirst().getId();
 		boolean deleted = userService.deleteUser(id);

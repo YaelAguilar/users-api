@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
@@ -16,13 +17,16 @@ public class UserService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
     private static final ZoneId MADAGASCAR_ZONE = ZoneId.of("Indian/Antananarivo");
 
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^(\\+?\\d{1,3}[\\s-]?)?(\\d{10})$");
+    private static final Pattern TAX_ID_PATTERN = Pattern.compile("^[A-ZÑ&]{3,4}\\d{6}[A-Z0-9]{3}$");
+
     public UserService() {
         users.add(new User(
                 UUID.randomUUID(),
                 "user1@mail.com",
                 "user1",
                 "+1 5555555555",
-                AesEncryptionUtil.encrypt("7c4a8d09ca3762af61e59520943dc26494f8941b"),
+                AesEncryptionUtil.encrypt("password123"),
                 "AARR990101XXX",
                 "01-01-2026 00:00",
                 List.of(
@@ -35,7 +39,7 @@ public class UserService {
                 "user2@mail.com",
                 "user2",
                 "+1 5555555556",
-                AesEncryptionUtil.encrypt("7c4a8d09ca3762af61e59520943dc26494f8941b"),
+                AesEncryptionUtil.encrypt("password123"),
                 "BBRR990101YYY",
                 "01-01-2026 00:00",
                 List.of(
@@ -48,7 +52,7 @@ public class UserService {
                 "user3@mail.com",
                 "user3",
                 "+1 5555555557",
-                AesEncryptionUtil.encrypt("7c4a8d09ca3762af61e59520943dc26494f8941b"),
+                AesEncryptionUtil.encrypt("password123"),
                 "CCRR990101ZZZ",
                 "01-01-2026 00:00",
                 List.of(
@@ -120,8 +124,25 @@ public class UserService {
                 switch (key) {
                     case "email" -> u.setEmail((String) value);
                     case "name" -> u.setName((String) value);
-                    case "phone" -> u.setPhone((String) value);
-                    case "tax_id" -> u.setTax_id((String) value);
+                    case "phone" -> {
+                        String phone = (String) value;
+                        if (phone == null || !PHONE_PATTERN.matcher(phone).matches()) {
+                            throw new IllegalArgumentException("Phone must be 10 digits and may include country code");
+                        }
+                        u.setPhone(phone);
+                    }
+                    case "tax_id" -> {
+                        String taxId = (String) value;
+                        if (taxId == null || !TAX_ID_PATTERN.matcher(taxId).matches()) {
+                            throw new IllegalArgumentException("tax_id must have RFC format");
+                        }
+                        boolean taxIdExists = users.stream()
+                                .anyMatch(other -> !other.getId().equals(u.getId()) && other.getTax_id().equals(taxId));
+                        if (taxIdExists) {
+                            throw new IllegalArgumentException("tax_id already exists");
+                        }
+                        u.setTax_id(taxId);
+                    }
                     case "password" -> u.setPassword(AesEncryptionUtil.encrypt((String) value));
                 }
             });
