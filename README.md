@@ -5,6 +5,14 @@ La API gestiona usuarios en memoria (lista con 3 usuarios iniciales) y expone op
 
 ---
 
+### Repositorio GitHub
+
+El código fuente también está versionado en GitHub (reemplazar con la URL real del repositorio):
+
+- `https://github.com/YaelAguilar/users-api`
+
+---
+
 ### Requisitos
 
 - **Java**: JDK 17 o 21 (se usó Java 21).
