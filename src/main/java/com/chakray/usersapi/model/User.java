@@ -1,5 +1,6 @@
 package com.chakray.usersapi.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class User {
     )
     private String phone;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String password;
 
     @NotBlank

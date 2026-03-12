@@ -26,10 +26,16 @@ public class UserController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String filter) {
 
+        List<User> result;
+
         if (filter != null && !filter.isBlank()) {
-            return ResponseEntity.ok(userService.filterUsers(filter));
+            result = userService.filterUsers(filter);
+        } else {
+            result = userService.getUsers(sortedBy);
         }
-        return ResponseEntity.ok(userService.getUsers(sortedBy));
+
+        result.forEach(u -> u.setPassword(null));
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping
