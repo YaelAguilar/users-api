@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -34,16 +35,37 @@ public class UserController {
             result = userService.getUsers(sortedBy);
         }
 
-        result.forEach(u -> u.setPassword(null));
-        return ResponseEntity.ok(result);
+        List<User> sanitized = result.stream()
+                .map(u -> new User(
+                        u.getId(),
+                        u.getEmail(),
+                        u.getName(),
+                        u.getPhone(),
+                        null,
+                        u.getTax_id(),
+                        u.getCreated_at(),
+                        u.getAddresses()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(sanitized);
     }
 
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         try {
             User created = userService.createUser(user);
-            created.setPassword(null);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            User sanitized = new User(
+                    created.getId(),
+                    created.getEmail(),
+                    created.getName(),
+                    created.getPhone(),
+                    null,
+                    created.getTax_id(),
+                    created.getCreated_at(),
+                    created.getAddresses()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(sanitized);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -55,8 +77,17 @@ public class UserController {
             @RequestBody Map<String, Object> fields) {
         return userService.updateUser(id, fields)
                 .map(u -> {
-                    u.setPassword(null);
-                    return ResponseEntity.ok(u);
+                    User sanitized = new User(
+                            u.getId(),
+                            u.getEmail(),
+                            u.getName(),
+                            u.getPhone(),
+                            null,
+                            u.getTax_id(),
+                            u.getCreated_at(),
+                            u.getAddresses()
+                    );
+                    return ResponseEntity.ok(sanitized);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
